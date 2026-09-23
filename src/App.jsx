@@ -10,15 +10,21 @@ import StatsView from './components/StatsView.jsx'
 const CHALLENGE_SECONDS = 60
 
 export default function App() {
-  const [view, setView] = useState('setup')
+  // 刷新或误关页面后，从未结束的会话继续作答
+  const [boot] = useState(() => {
+    const saved = store.loadSession()
+    return { session: saved, view: saved ? 'quiz' : 'setup' }
+  })
+
+  const [view, setView] = useState(boot.view)
   const [stats, setStats] = useState(store.loadStats)
   const [wrongBook, setWrongBook] = useState(store.loadWrongBook)
   const [settings, setSettings] = useState(store.loadSettings)
-  const [session, setSession] = useState(null)
+  const [session, setSession] = useState(boot.session)
   const [isRecord, setIsRecord] = useState(false)
 
   // 同一题只允许计分一次（超时与点击可能落在同一帧）
-  const answeredRef = useRef(false)
+  const answeredRef = useRef(boot.session ? boot.session.answered !== null : false)
   // 供计时器读取最新状态，避免闭包读到旧的 session
   const sessionRef = useRef(null)
   useEffect(() => {
@@ -28,6 +34,26 @@ export default function App() {
   useEffect(() => { store.saveStats(stats) }, [stats])
   useEffect(() => { store.saveWrongBook(wrongBook) }, [wrongBook])
   useEffect(() => { store.saveSettings(settings) }, [settings])
+
+  // 进行中的会话落盘；一轮结束后清掉，下次进来仍是首页
+  useEffect(() => {
+    if (session && !session.finished) store.saveSession(session)
+    else store.clearSession()
+  }, [session])
+
+  // 主题：跟随系统时监听系统深浅色切换
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const apply = () => {
+      const resolved =
+        settings.theme === 'system' ? (mq.matches ? 'dark' : 'light') : settings.theme
+      document.documentElement.dataset.theme = resolved
+    }
+    apply()
+    if (settings.theme !== 'system') return undefined
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [settings.theme])
 
   const start = useCallback(
     (mode) => {
@@ -52,6 +78,7 @@ export default function App() {
         correct: 0,
         wrong: 0,
         streak: 0,
+        misses: [],
         answered: null,
         timeLeft: settings.seconds,
         timeLimit: settings.seconds,
@@ -78,6 +105,18 @@ export default function App() {
       correct: cur.correct + (isCorrect ? 1 : 0),
       wrong: cur.wrong + (isCorrect ? 0 : 1),
       streak,
+      // 记下答错 / 超时的题，供结算页复盘
+      misses: isCorrect
+        ? cur.misses
+        : [
+            ...cur.misses,
+            {
+              province,
+              promptKind: cur.question.promptKind,
+              correct,
+              picked: typeof picked === 'number' ? cur.question.options[picked] : null,
+            },
+          ],
     })
     setStats((st) => store.recordAnswer(st, { province, isCorrect, streak }))
     setWrongBook((wb) =>
@@ -117,6 +156,28 @@ export default function App() {
     setView('setup')
   }, [])
 
+  const exportData = useCallback(() => {
+    const json = JSON.stringify(store.buildBackup({ stats, wrongBook, settings }), null, 2)
+    const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `行政区划刷题-备份-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [stats, wrongBook, settings])
+
+  const importData = useCallback((text) => {
+    const data = store.parseBackup(text)
+    if (!data) {
+      window.alert('这个文件无法识别，请选择由本站「导出备份」生成的 JSON 文件。')
+      return
+    }
+    if (!window.confirm('导入会覆盖当前的统计、错题本与设置，确定继续吗？')) return
+    if (data.stats) setStats(data.stats)
+    if (data.wrongBook) setWrongBook(data.wrongBook)
+    if (data.settings) setSettings(data.settings)
+  }, [])
+
   // 每题倒计时（练习 / 错题重刷）
   useEffect(() => {
     if (view !== 'quiz' || !session || session.mode === 'challenge' || session.finished) return
@@ -143,11 +204,11 @@ export default function App() {
     return () => clearTimeout(t)
   })
 
-  // 限时挑战：答完自动推进
+  // 限时挑战：答完自动推进（答错时多留一会儿，让解析能看清）
   useEffect(() => {
     if (!session || session.mode !== 'challenge' || session.finished || session.answered === null) return
     const isCorrect = session.answered === session.question.answerIndex
-    const t = setTimeout(next, isCorrect ? 420 : 950)
+    const t = setTimeout(next, isCorrect ? 420 : 2000)
     return () => clearTimeout(t)
   }, [session?.answered, session?.question, session?.mode, session?.finished, next, session])
 
@@ -220,7 +281,14 @@ export default function App() {
           />
         )}
 
-        {view === 'stats' && <StatsView stats={stats} onReset={() => setStats(store.emptyStats())} />}
+        {view === 'stats' && (
+          <StatsView
+            stats={stats}
+            onReset={() => setStats(store.emptyStats())}
+            onExport={exportData}
+            onImport={importData}
+          />
+        )}
       </main>
     </div>
   )

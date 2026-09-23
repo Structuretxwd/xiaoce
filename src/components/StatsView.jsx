@@ -1,7 +1,13 @@
 import { PROVINCES, MUNICIPALITIES } from '../data/divisions.js'
 
-export default function StatsView({ stats, onReset }) {
+export default function StatsView({ stats, onReset, onExport, onImport }) {
   const accuracy = stats.answered ? Math.round((stats.correct / stats.answered) * 100) : 0
+
+  const pickFile = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (file) onImport(await file.text())
+  }
 
   const rows = [...PROVINCES, ...MUNICIPALITIES].map((p) => ({
     name: p.name,
@@ -58,6 +64,22 @@ export default function StatsView({ stats, onReset }) {
           </ul>
         </section>
       )}
+
+      <section className="breakdown">
+        <h2>备份</h2>
+        <p className="note">
+          导出为一个 JSON 文件保存到本地。换设备或清空浏览器数据后，导入即可恢复统计、错题本与设置。
+        </p>
+        <div className="actions">
+          <button className="secondary" type="button" onClick={onExport}>
+            导出备份
+          </button>
+          <label className="secondary">
+            导入备份
+            <input type="file" accept="application/json,.json" hidden onChange={pickFile} />
+          </label>
+        </div>
+      </section>
 
       {stats.answered > 0 && (
         <div className="actions">

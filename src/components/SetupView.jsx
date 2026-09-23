@@ -20,6 +20,12 @@ const SCOPE_OPTIONS = [
   { value: SCOPE_DISTRICT, label: '直辖市市辖区' },
 ]
 
+const THEME_OPTIONS = [
+  { value: 'system', label: '跟随系统' },
+  { value: 'light', label: '浅色' },
+  { value: 'dark', label: '深色' },
+]
+
 export default function SetupView({ stats, wrongCount, settings, onSettingsChange, onStart }) {
   const accuracy = stats.answered ? Math.round((stats.correct / stats.answered) * 100) : null
 
@@ -70,6 +76,22 @@ export default function SetupView({ stats, wrongCount, settings, onSettingsChang
           </div>
         </div>
         <p className="note">超时按答错计，并同样进入错题本。</p>
+        <div className="panel-head">
+          <h2>外观</h2>
+          <div className="seg" role="group" aria-label="外观">
+            {THEME_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                className={settings.theme === o.value ? 'on' : ''}
+                onClick={() => onSettingsChange({ ...settings, theme: o.value })}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="note">深色模式适合夜间练习；「跟随系统」会随操作系统的深浅色自动切换。</p>
         <div className="actions">
           <button className="primary" type="button" onClick={() => onStart('practice')}>
             开始练习

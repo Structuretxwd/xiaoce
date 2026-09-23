@@ -15,6 +15,8 @@ export default function QuizView({ session, onAnswer, onNext }) {
   const parts = explainParts(question.correct)
   const showWrong = isCorrect === false && typeof answered === 'number'
   const wrongParts = showWrong ? explainParts(question.options[answered]) : null
+  // 限时挑战里答对只做快速确认，答错则完整展示解析，避免刷完一轮什么都没记住
+  const showFeedback = locked && (mode !== 'challenge' || !isCorrect)
 
   useEffect(() => {
     const handler = (e) => {
@@ -31,7 +33,7 @@ export default function QuizView({ session, onAnswer, onNext }) {
         }
         return
       }
-      if (mode === 'challenge') return
+      if (mode === 'challenge' && !showWrong) return
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
         onNext()
@@ -39,7 +41,7 @@ export default function QuizView({ session, onAnswer, onNext }) {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [locked, mode, question, onAnswer, onNext])
+  }, [locked, mode, question, onAnswer, onNext, showWrong])
 
   return (
     <div className="view quiz">
@@ -97,7 +99,7 @@ export default function QuizView({ session, onAnswer, onNext }) {
         })}
       </div>
 
-      {locked && mode !== 'challenge' && (
+      {showFeedback && (
         <div className={`feedback${isCorrect ? ' ok' : ' bad'}`}>
           <p className="feedback-head">
             {isCorrect

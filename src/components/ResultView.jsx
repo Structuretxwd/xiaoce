@@ -1,7 +1,8 @@
-import { MODE_LABEL } from '../lib/quiz.js'
+import { explainParts, MODE_LABEL } from '../lib/quiz.js'
 
 export default function ResultView({ session, isRecord, wrongCount, onAgain, onHome }) {
-  const { mode, correct, wrong, total } = session
+  const { mode, correct, wrong, total, misses } = session
+  const missed = misses || []
   const answered = correct + wrong
   const accuracy = answered ? Math.round((correct / answered) * 100) : 0
 
@@ -45,6 +46,44 @@ export default function ResultView({ session, isRecord, wrongCount, onAgain, onH
           <span>正确率</span>
         </div>
       </section>
+
+      {missed.length > 0 && (
+        <section className="breakdown">
+          <h2>本轮错题 · {missed.length} 道</h2>
+          <ul className="review">
+            {missed.map((m, i) => {
+              const parts = explainParts(m.correct)
+              const wrongParts = m.picked ? explainParts(m.picked) : null
+              return (
+                <li className="review-item" key={`${m.correct.name}-${i}`}>
+                  <p className="review-head">
+                    下列哪个{m.promptKind}属于<b>{m.province}</b>
+                    <span className="review-pick">
+                      {m.picked ? `你选了 ${m.picked.name}` : '超时未作答'}
+                    </span>
+                  </p>
+                  <ul className="explain-list">
+                    <li className="explain-item ok">
+                      <span className="explain-icon" aria-hidden="true">✓</span>
+                      <span className="explain-text">
+                        <b>{parts.name}</b>{parts.tail}
+                      </span>
+                    </li>
+                    {wrongParts && (
+                      <li className="explain-item bad">
+                        <span className="explain-icon" aria-hidden="true">✗</span>
+                        <span className="explain-text">
+                          <b>{wrongParts.name}</b>{wrongParts.tail}
+                        </span>
+                      </li>
+                    )}
+                  </ul>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
       <div className="actions">
         {canAgain && (

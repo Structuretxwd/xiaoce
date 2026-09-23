@@ -10,7 +10,7 @@
   </defs>
 
   <g clip-path="url(#frame)">
-    <rect width="680" height="780" fill="#f6f6f4" />
+    <rect width="680" height="780" fill="#f7f7f5" />
 
     <!-- 顶栏 -->
     <rect width="680" height="56" fill="#ffffff" />
@@ -72,8 +72,9 @@
     <text x="94" y="446" font-size="19" font-weight="500" fill="#15171c">通辽市</text>
 
     <!-- 解析反馈 -->
-    <rect x="28" y="494" width="624" height="262" rx="16" fill="#fbecea" />
-    <text x="52" y="532" font-size="16" font-weight="600" fill="#c0392b">答错了 · 正确答案是 抚顺市</text>
+    <rect x="28.5" y="494.5" width="623" height="261" rx="17.5" fill="#fbecea" stroke="#c0392b" stroke-opacity="0.22" />
+    <rect x="29" y="512" width="3" height="226" rx="1.5" fill="#c0392b" />
+    <text x="56" y="532" font-size="16" font-weight="600" fill="#c0392b">答错了 · 正确答案是 抚顺市</text>
 
     <!-- 正确项解析 -->
     <rect x="52" y="550" width="576" height="50" rx="10" fill="#ffffff" />
