@@ -9,7 +9,7 @@
   --surface: #ffffff;
   --ink: #15171c;
   --ink-2: #5c6472;
-  --ink-3: #8d95a3;
+  --ink-3: #666e7d;
   --line: #e5e5e1;
   --line-soft: #eeeeea;
   --accent: #4338ca;
@@ -58,8 +58,8 @@
   --bg: #0f1218;
   --surface: #171b22;
   --ink: #e8ebf0;
-  --ink-2: #a2acbb;
-  --ink-3: #78828f;
+  --ink-2: #b7c1d0;
+  --ink-3: #99a3b1;
   --line: #262c36;
   --line-soft: #1f242d;
   --accent: #8f8aff;
@@ -347,7 +347,7 @@ kbd {
   gap: 14px;
 }
 
-.panel-head {
+.more-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -356,6 +356,7 @@ kbd {
 }
 
 .panel h2,
+.more-row h2,
 .breakdown h2 {
   margin: 0;
   font-size: 15px;
@@ -389,6 +390,17 @@ kbd {
   color: var(--ink);
   font-weight: 600;
   box-shadow: var(--shadow-1);
+}
+
+/* 出题范围是首页的主设置，铺满整行更好按 */
+.seg-wide {
+  width: 100%;
+}
+
+.seg-wide button {
+  flex: 1;
+  padding: 10px 8px;
+  font-size: 14px;
 }
 
 .actions {
@@ -443,27 +455,181 @@ kbd {
   transform: translateY(0);
 }
 
-.textlink {
-  align-self: flex-start;
-  border: 0;
-  background: none;
-  padding: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.18s;
+/* 主操作区：开始练习最醒目，其余为次级动作 */
+.start-actions {
+  margin-top: 4px;
 }
 
-.textlink:hover {
-  border-bottom-color: currentColor;
+.primary-lg {
+  padding: 15px 32px;
+  font-size: 16px;
+}
+
+.mode-cta {
+  gap: 8px;
+}
+
+/* 次级动作按钮上的小角标：玩法标签或数量 */
+.count {
+  min-width: 20px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* ---------- 首页仪表盘 ---------- */
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.dash-card {
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dash-card b {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-card span {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* 题库覆盖进度：占满整行，作为仪表盘的一条总结 */
+.dash-progress {
+  grid-column: 1 / -1;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-progress-head {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-progress-head > span:first-child {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.dash-progress-head b {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.dash-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--seg-bg);
+  overflow: hidden;
+}
+
+.dash-progress-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.5s var(--ease);
+}
+
+/* ---------- 折叠的更多设置 ---------- */
+
+.more-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.more-toggle:hover {
+  border-color: var(--ink-3);
+  box-shadow: var(--shadow-2);
+}
+
+.more-summary {
+  flex: 1;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.more-arrow {
+  flex: none;
+  color: var(--ink-2);
+  transition: transform 0.22s var(--ease), color 0.18s;
+}
+
+.more-toggle:hover .more-arrow {
+  color: var(--ink);
+}
+
+.more-arrow.open {
+  transform: rotate(180deg);
+}
+
+.more-body {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: rise 0.26s var(--ease) both;
+}
+
+.more-body .note {
+  margin-top: -8px;
 }
 
 /* ---------- 数据条 ---------- */
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* 用 auto-fit 适配 3 / 4 项，避免固定四列时留下空列 */
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -496,6 +662,7 @@ kbd {
 /* ---------- 答题 ---------- */
 
 .quiz {
+  position: relative;
   gap: 26px;
 }
 
@@ -522,9 +689,49 @@ kbd {
   flex: 1;
 }
 
-.quizbar .streak {
+/* 连对气泡：答对后重新挂载以重放动画，5 连以上换成实心强调 */
+.combo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-soft);
+  background: var(--accent-soft);
   color: var(--accent);
+  font-size: 12px;
   font-weight: 600;
+  animation: combo-pop 0.4s var(--ease);
+}
+
+.combo b {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.combo.hot {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-strong);
+}
+
+/* 连对飘字：向上浮出后自行淡出，不阻塞点击 */
+.combo-burst {
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  pointer-events: none;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--accent);
+  animation: combo-burst 0.9s var(--ease) forwards;
+}
+
+.combo-burst.hot {
+  font-size: 24px;
+  color: var(--ok);
 }
 
 .clock {
@@ -872,6 +1079,12 @@ kbd {
   color: var(--bad);
 }
 
+.review-count {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
 label.secondary {
   cursor: pointer;
 }
@@ -912,6 +1125,36 @@ label.secondary {
   }
 }
 
+/* 连对：气泡先缩后弹，飘字向上浮出并淡出 */
+@keyframes combo-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.68);
+  }
+  55% {
+    transform: scale(1.14);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes combo-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px) scale(0.86);
+  }
+  28% {
+    opacity: 1;
+    transform: translate(-50%, -8px) scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -36px) scale(1);
+  }
+}
+
 .question,
 .options,
 .feedback,
@@ -940,6 +1183,16 @@ label.secondary {
 
   .metrics {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* 窄屏下让主按钮独占一行，次级动作排在其后 */
+  .start-actions .primary-lg {
+    flex: 1 1 100%;
+    justify-content: center;
   }
 
   .metric:nth-child(3) {

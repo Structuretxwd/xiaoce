@@ -1,4 +1,5 @@
 import { divisionKind } from '../data/divisions.js'
+import { explainParts } from '../lib/quiz.js'
 
 export default function WrongBookView({ wrongBook, onRepractice, onClear }) {
   if (!wrongBook.length) {
@@ -36,15 +37,39 @@ export default function WrongBookView({ wrongBook, onRepractice, onClear }) {
         </button>
       </div>
 
-      <ul className="rows">
-        {wrongBook.map((e) => (
-          <li key={`${e.province}-${e.division}`}>
-            <span className="row-main">{e.division}</span>
-            <span className="row-sub">{e.province}</span>
-            <span className="row-kind">{divisionKind(e.division)}</span>
-            <span className="row-count">错 {e.wrongCount} 次</span>
-          </li>
-        ))}
+      {/* 解析直接展开，省掉逐条点击；错选项依赖作答时留下的记录，超时作答只有正确项 */}
+      <ul className="review">
+        {wrongBook.map((e) => {
+          const kind = divisionKind(e.division)
+          const right = explainParts({ name: e.division, province: e.province })
+          const wrong = e.picked ? explainParts(e.picked) : null
+          return (
+            <li className="review-item" key={`${e.province}-${e.division}`}>
+              <p className="review-head">
+                <span>
+                  下列哪个{kind}属于<b>{e.province}</b>
+                </span>
+                <span className="review-count">错 {e.wrongCount} 次</span>
+              </p>
+              <ul className="explain-list">
+                <li className="explain-item ok">
+                  <span className="explain-icon" aria-hidden="true">✓</span>
+                  <span className="explain-text">
+                    <b>{right.name}</b>{right.tail}
+                  </span>
+                </li>
+                {wrong && (
+                  <li className="explain-item bad">
+                    <span className="explain-icon" aria-hidden="true">✗</span>
+                    <span className="explain-text">
+                      <b>{wrong.name}</b>{wrong.tail}
+                    </span>
+                  </li>
+                )}
+              </ul>
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

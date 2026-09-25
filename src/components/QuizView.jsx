@@ -45,6 +45,13 @@ export default function QuizView({ session, onAnswer, onNext }) {
 
   return (
     <div className="view quiz">
+      {isCorrect && streak >= 2 && (
+        // 连对时向上飘出一行提示，0.9 秒后自行消失
+        <div className={`combo-burst${streak >= 5 ? ' hot' : ''}`} key={`b-${streak}`} aria-hidden="true">
+          连对 ×{streak}
+        </div>
+      )}
+
       <div className="quizbar">
         <span className="tag">{MODE_LABEL[mode]}</span>
         <span className="stat">
@@ -54,7 +61,12 @@ export default function QuizView({ session, onAnswer, onNext }) {
         <span className="stat">对 {correct}</span>
         <span className="stat">错 {wrong}</span>
         <span className="grow" />
-        {streak >= 3 && <span className="streak">连对 {streak}</span>}
+        {streak >= 2 && (
+          // key 随连对数变化，让气泡每次都重新弹一次
+          <span className={`combo${streak >= 5 ? ' hot' : ''}`} key={streak}>
+            连对 <b>{streak}</b>
+          </span>
+        )}
         <span className={`clock${urgent ? ' urgent' : ''}`}>
           {secondsLeft}
           <i>s</i>

@@ -1,7 +1,7 @@
 import { explainParts, MODE_LABEL } from '../lib/quiz.js'
 
 export default function ResultView({ session, isRecord, wrongCount, onAgain, onHome }) {
-  const { mode, correct, wrong, total, misses } = session
+  const { mode, correct, wrong, total, misses, bestStreak = 0 } = session
   const missed = misses || []
   const answered = correct + wrong
   const accuracy = answered ? Math.round((correct / answered) * 100) : 0
@@ -45,6 +45,12 @@ export default function ResultView({ session, isRecord, wrongCount, onAgain, onH
           <b>{accuracy}%</b>
           <span>正确率</span>
         </div>
+        {bestStreak > 1 && (
+          <div className="metric">
+            <b>{bestStreak}</b>
+            <span>最高连对</span>
+          </div>
+        )}
       </section>
 
       {missed.length > 0 && (

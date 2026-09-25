@@ -78,6 +78,7 @@ export default function App() {
         correct: 0,
         wrong: 0,
         streak: 0,
+        bestStreak: 0,
         misses: [],
         answered: null,
         timeLeft: settings.seconds,
@@ -98,6 +99,8 @@ export default function App() {
     const isCorrect = picked === cur.question.answerIndex
     const streak = isCorrect ? cur.streak + 1 : 0
     const { province, correct } = cur.question
+    // 超时没有选项可指向，只有真正点选才记下错选项
+    const pickedUnit = typeof picked === 'number' ? cur.question.options[picked] : null
 
     setSession({
       ...cur,
@@ -105,6 +108,7 @@ export default function App() {
       correct: cur.correct + (isCorrect ? 1 : 0),
       wrong: cur.wrong + (isCorrect ? 0 : 1),
       streak,
+      bestStreak: Math.max(cur.bestStreak || 0, streak),
       // 记下答错 / 超时的题，供结算页复盘
       misses: isCorrect
         ? cur.misses
@@ -114,15 +118,15 @@ export default function App() {
               province,
               promptKind: cur.question.promptKind,
               correct,
-              picked: typeof picked === 'number' ? cur.question.options[picked] : null,
+              picked: pickedUnit,
             },
           ],
     })
-    setStats((st) => store.recordAnswer(st, { province, isCorrect, streak }))
+    setStats((st) => store.recordAnswer(st, { province, division: correct.name, isCorrect, streak }))
     setWrongBook((wb) =>
       isCorrect
         ? store.removeFromWrongBook(wb, { province, division: correct.name })
-        : store.addToWrongBook(wb, { province, division: correct.name })
+        : store.addToWrongBook(wb, { province, division: correct.name, picked: pickedUnit })
     )
   }, [])
 

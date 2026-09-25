@@ -25,7 +25,7 @@ function write(key, value) {
 }
 
 export function emptyStats() {
-  return { answered: 0, correct: 0, bestStreak: 0, bestChallenge: 0, byProvince: {} }
+  return { answered: 0, correct: 0, bestStreak: 0, bestChallenge: 0, byProvince: {}, mastered: {} }
 }
 
 export function loadStats() {
@@ -97,14 +97,15 @@ export function parseBackup(text) {
   return { stats, wrongBook, settings }
 }
 
-/** 记录一次作答结果，返回新的统计对象。 */
-export function recordAnswer(stats, { province, isCorrect, streak }) {
+/** 记录一次作答结果，返回新的统计对象。答对过一次即计入 mastered（按行政区名去重）。 */
+export function recordAnswer(stats, { province, division, isCorrect, streak }) {
   const prev = stats.byProvince[province] || { answered: 0, correct: 0 }
   return {
     ...stats,
     answered: stats.answered + 1,
     correct: stats.correct + (isCorrect ? 1 : 0),
     bestStreak: Math.max(stats.bestStreak, streak),
+    mastered: isCorrect ? { ...stats.mastered, [division]: 1 } : stats.mastered,
     byProvince: {
       ...stats.byProvince,
       [province]: {
@@ -115,14 +116,17 @@ export function recordAnswer(stats, { province, isCorrect, streak }) {
   }
 }
 
-export function addToWrongBook(list, { province, division }) {
+/** picked 为本次错选的行政区（{name, province, ...}），超时作答时传 null。 */
+export function addToWrongBook(list, { province, division, picked = null }) {
   const hit = list.find((e) => e.province === province && e.division === division)
   if (hit) {
     return list.map((e) =>
-      e === hit ? { ...e, wrongCount: e.wrongCount + 1, lastWrongAt: Date.now() } : e
+      e === hit
+        ? { ...e, wrongCount: e.wrongCount + 1, lastWrongAt: Date.now(), picked }
+        : e
     )
   }
-  return [...list, { province, division, wrongCount: 1, lastWrongAt: Date.now() }]
+  return [...list, { province, division, wrongCount: 1, lastWrongAt: Date.now(), picked }]
 }
 
 export function removeFromWrongBook(list, { province, division }) {
